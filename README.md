@@ -13,6 +13,10 @@ It aims to be close to GitHub-flavored Markdown rendering and includes:
 - footnotes
 - raw HTML support
 
+## Demo
+
+![ghmd demo](demo.png)
+
 ## Usage
 
 Render a Markdown file to HTML:

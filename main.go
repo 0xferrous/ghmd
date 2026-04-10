@@ -2,11 +2,15 @@ package main
 
 import (
 	"bytes"
+	"encoding/base64"
 	"flag"
 	"fmt"
 	stdhtml "html"
 	"html/template"
 	"io"
+	"mime"
+	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -341,7 +345,17 @@ func main() {
 		fatal(err)
 	}
 
-	bodyHTML, headings, err := renderMarkdown(src, *theme)
+	baseDir := filepath.Dir(name)
+	if name == "stdin" {
+		if wd, err := os.Getwd(); err == nil {
+			baseDir = wd
+		}
+	}
+	if baseDir == "" {
+		baseDir = "."
+	}
+
+	bodyHTML, headings, err := renderMarkdown(src, *theme, baseDir)
 	if err != nil {
 		fatal(err)
 	}
@@ -417,7 +431,7 @@ func readInput(path string) ([]byte, string, error) {
 	return b, path, err
 }
 
-func renderMarkdown(src []byte, theme string) (string, []tocItem, error) {
+func renderMarkdown(src []byte, theme, baseDir string) (string, []tocItem, error) {
 	md := goldmark.New(
 		goldmark.WithExtensions(
 			extension.GFM,
@@ -433,7 +447,7 @@ func renderMarkdown(src []byte, theme string) (string, []tocItem, error) {
 		goldmark.WithRendererOptions(
 			html.WithUnsafe(),
 			renderer.WithNodeRenderers(
-				util.Prioritized(&githubLikeRenderer{}, 100),
+				util.Prioritized(&githubLikeRenderer{baseDir: baseDir}, 100),
 			),
 		),
 	)
@@ -449,10 +463,13 @@ func renderMarkdown(src []byte, theme string) (string, []tocItem, error) {
 	return buf.String(), headings, nil
 }
 
-type githubLikeRenderer struct{}
+type githubLikeRenderer struct {
+	baseDir string
+}
 
 func (r *githubLikeRenderer) RegisterFuncs(reg renderer.NodeRendererFuncRegisterer) {
 	reg.Register(ast.KindHeading, renderHeadingWithAnchor)
+	reg.Register(ast.KindImage, r.renderImage)
 }
 
 func renderHeadingWithAnchor(w util.BufWriter, source []byte, node ast.Node, entering bool) (ast.WalkStatus, error) {
@@ -485,6 +502,75 @@ func renderHeadingWithAnchor(w util.BufWriter, source []byte, node ast.Node, ent
 	_ = w.WriteByte("0123456"[h.Level])
 	_, _ = w.WriteString(">\n")
 	return ast.WalkContinue, nil
+}
+
+func (r *githubLikeRenderer) renderImage(w util.BufWriter, source []byte, node ast.Node, entering bool) (ast.WalkStatus, error) {
+	if !entering {
+		return ast.WalkContinue, nil
+	}
+
+	n := node.(*ast.Image)
+	dest := util.URLEscape(n.Destination, true)
+	if inline, ok := r.inlineImageSource(string(dest)); ok {
+		dest = []byte(inline)
+	}
+
+	_, _ = w.WriteString(`<img src="`)
+	_, _ = w.Write(util.EscapeHTML(dest))
+	_, _ = w.WriteString(`" alt="`)
+	_, _ = w.WriteString(stdhtml.EscapeString(string(n.Text(source))))
+	_ = w.WriteByte('"')
+	if n.Title != nil {
+		_, _ = w.WriteString(` title="`)
+		_, _ = w.Write(n.Title)
+		_ = w.WriteByte('"')
+	}
+	if n.Attributes() != nil {
+		html.RenderAttributes(w, n, html.ImageAttributeFilter)
+	}
+	_, _ = w.WriteString(">")
+	return ast.WalkSkipChildren, nil
+}
+
+func (r *githubLikeRenderer) inlineImageSource(dest string) (string, bool) {
+	lower := strings.ToLower(strings.TrimSpace(dest))
+	if lower == "" {
+		return "", false
+	}
+	if strings.HasPrefix(lower, "data:") || strings.HasPrefix(lower, "http://") || strings.HasPrefix(lower, "https://") || strings.HasPrefix(lower, "//") || strings.Contains(lower, "://") {
+		return "", false
+	}
+
+	path := dest
+	if unescaped, err := url.PathUnescape(dest); err == nil {
+		path = unescaped
+	}
+	if idx := strings.IndexAny(path, "?#"); idx >= 0 {
+		path = path[:idx]
+	}
+	if path == "" {
+		return "", false
+	}
+
+	if !filepath.IsAbs(path) {
+		path = filepath.Join(r.baseDir, path)
+	}
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return "", false
+	}
+	return toDataURI(path, data), true
+}
+
+func toDataURI(path string, data []byte) string {
+	mimeType := strings.TrimSpace(mime.TypeByExtension(strings.ToLower(filepath.Ext(path))))
+	if mimeType == "" {
+		mimeType = http.DetectContentType(data)
+	}
+	if strings.HasSuffix(strings.ToLower(path), ".svg") {
+		mimeType = "image/svg+xml"
+	}
+	return "data:" + mimeType + ";base64," + base64.StdEncoding.EncodeToString(data)
 }
 
 func mermaidWrapperRenderer(w util.BufWriter, ctx highlighting.CodeBlockContext, entering bool) {
