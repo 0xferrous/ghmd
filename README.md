@@ -83,13 +83,12 @@ A footnote reference.[^1]
 
 ## Development
 
-Format and test the project:
+Format the project:
 
 ```bash
 gofmt -w main.go
-go test ./...
 ```
 
 ## License
 
-No license has been specified yet.
+MIT
