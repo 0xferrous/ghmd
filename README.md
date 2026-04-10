@@ -39,6 +39,7 @@ cat input.md | go run . > output.html
 - `-theme` — syntax highlighting theme
 - `-toc-min-level` — minimum heading level included in the TOC
 - `-toc-max-level` — maximum heading level included in the TOC
+- `-open` — open the generated HTML in your browser
 
 ## Theme options
 
