@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="160" viewBox="0 0 480 160" role="img" aria-label="Sample image">
+  <rect width="480" height="160" rx="16" fill="#f6f8fa"/>
+  <rect x="16" y="16" width="448" height="128" rx="12" fill="#ffffff" stroke="#d0d7de"/>
+  <circle cx="84" cy="80" r="28" fill="#0969da"/>
+  <path d="M76 84l8-8 8 8 12-16" fill="none" stroke="#ffffff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="140" y="74" font-family="Arial, Helvetica, sans-serif" font-size="28" fill="#24292f">Sample image</text>
+  <text x="140" y="108" font-family="Arial, Helvetica, sans-serif" font-size="16" fill="#57606a">Local SVG so it always renders</text>
+</svg>
