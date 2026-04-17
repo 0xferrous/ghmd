@@ -31,6 +31,14 @@ Or read from stdin and write to stdout:
 cat input.md | go run . > output.html
 ```
 
+Start HTTP server for directory browse + Markdown render:
+
+```bash
+go run . -server
+# or
+go run . -server ./docs -host 0.0.0.0 -port 8080
+```
+
 ## Flags
 
 - `-i` — input Markdown file, defaults to stdin
@@ -40,6 +48,9 @@ cat input.md | go run . > output.html
 - `-toc-min-level` — minimum heading level included in the TOC
 - `-toc-max-level` — maximum heading level included in the TOC
 - `-open` — open the generated HTML in your browser
+- `-server` — start HTTP server; optional root dir path
+- `-host` — server host
+- `-port` — server port
 
 ## Theme options
 
