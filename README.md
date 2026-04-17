@@ -92,6 +92,32 @@ A footnote reference.[^1]
 - Mermaid diagrams are rendered client-side using the Mermaid CDN.
 - Raw HTML is allowed in the rendered output.
 
+## Home Manager
+
+Use flake module to run `ghmd` as user service:
+
+```nix
+{
+  inputs.ghmd.url = "github:0xferrous/ghmd";
+
+  outputs = { self, ghmd, home-manager, ... }: {
+    homeConfigurations.alice = home-manager.lib.homeManagerConfiguration {
+      pkgs = import nixpkgs { system = "x86_64-linux"; };
+      modules = [
+        ghmd.homeManagerModules.default
+        {
+          programs.ghmd.enable = true;
+          programs.ghmd.rootDir = "/home/alice/docs";
+          programs.ghmd.host = "127.0.0.1";
+          programs.ghmd.port = 8080;
+          programs.ghmd.theme = "github";
+        }
+      ];
+    };
+  };
+}
+```
+
 ## Development
 
 Format the project:
