@@ -189,7 +189,7 @@ func baseThemeCSS() template.CSS {
 func baseThemeCSSString() string { return string(baseThemeCSS()) }
 
 func docPageCSS() template.CSS {
-	return template.CSS(`
+	return template.CSS(baseThemeCSSString() + `
     .doc-header {
       position: sticky;
       top: 0;
@@ -447,6 +447,11 @@ func docPageCSS() template.CSS {
 
 func dirPageCSS() template.CSS {
 	return template.CSS(`
+    main.dir-page {
+      width: min(calc(100% - 2rem), 960px);
+      margin: 0 auto;
+      padding: 24px 0;
+    }
     .titlebar {
       position: sticky;
       top: 0;
@@ -570,6 +575,10 @@ func dirPageCSS() template.CSS {
     .dim { color: var(--muted); }
     footer { padding-top: .5rem; color: var(--muted); }
     @media (max-width: 40rem) {
+      main.dir-page {
+        width: calc(100% - 1rem);
+        padding: .75rem 0;
+      }
       tbody td.modified { width: 9rem; }
     }
 `)

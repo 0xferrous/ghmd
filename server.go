@@ -322,6 +322,13 @@ func renderDirectoryIndex(title, relPath string, sortState sortState, codeTheme 
 `)
 	b.WriteString(baseThemeCSSString())
 	b.WriteString(`
+	body {
+	  padding: 0 24px 24px;
+	}
+	main {
+	  max-width: 1200px;
+	  margin: 0 auto;
+	}
 	.titlebar {
 	  position: sticky;
 	  top: 0;
@@ -594,7 +601,7 @@ func renderFileHeader(relPath, codeTheme string) string {
 	}
 	file := path.Base(relPath)
 	var b strings.Builder
-	b.WriteString(`<div class="titlebar"><h1><span class="breadcrumb">`)
+	b.WriteString(`<header class="doc-header"><div class="titlebar"><h1><span class="breadcrumb">`)
 	if parent == "" {
 		b.WriteString(`<a href="/">#</a>`)
 	} else {
@@ -607,7 +614,7 @@ func renderFileHeader(relPath, codeTheme string) string {
 	b.WriteString(stdhtml.EscapeString(file))
 	b.WriteString(`</span></span></h1>`)
 	b.WriteString(renderServerControls(codeTheme))
-	b.WriteString(`</div>`)
+	b.WriteString(`</div></header>`)
 	return b.String()
 }
 
