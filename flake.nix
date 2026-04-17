@@ -16,7 +16,7 @@
         lib = pkgs.lib;
       in
       {
-        packages.ghmd = pkgs.buildGoModule {
+        packages.ghmd = pkgs.buildGo126Module {
           pname = "ghmd";
           version = "0.1.0";
           src = self;
