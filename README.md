@@ -131,6 +131,45 @@ Use the flake module to run `ghmd` as a user systemd service:
 }
 ```
 
+## NixOS module
+
+Use the flake module to run `ghmd` as a system service:
+
+```nix
+{
+  inputs.ghmd.url = "github:0xferrous/ghmd";
+
+  outputs = { self, nixpkgs, ghmd, ... }: {
+    nixosConfigurations.host = nixpkgs.lib.nixosSystem {
+      system = "x86_64-linux";
+      modules = [
+        ghmd.nixosModules.default
+        {
+          services.ghmd = {
+            enable = true;
+            rootDir = "/var/lib/ghmd";
+            host = "127.0.0.1";
+            port = 8080;
+            theme = "github";
+            openFirewall = false;
+          };
+        }
+      ];
+    };
+  };
+}
+```
+
+Available options:
+
+- `services.ghmd.enable` — enable the system service
+- `services.ghmd.package` — package to run
+- `services.ghmd.rootDir` — directory to serve
+- `services.ghmd.host` — listen host
+- `services.ghmd.port` — listen port
+- `services.ghmd.theme` — syntax highlighting theme
+- `services.ghmd.openFirewall` — open the service port in the firewall
+
 ## Development
 
 Format the project:
