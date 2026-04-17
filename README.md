@@ -31,13 +31,26 @@ Or read from stdin and write to stdout:
 cat input.md | go run . > output.html
 ```
 
-Start HTTP server for directory browse + Markdown render:
+## Server mode
+
+Start HTTP server with `-server`.
 
 ```bash
 go run . -server
 # or
 go run . -server ./docs -host 0.0.0.0 -port 8080
 ```
+
+Server mode behavior:
+
+- optional root directory path after `-server`
+- default root directory is current working directory
+- `-host` sets listen host
+- `-port` sets listen port
+- directory index links `..`, directories, and `.md` files
+- other files are shown as plain text, without links
+- Markdown pages render with the same TOC, anchors, theme switcher, and code theme picker
+- code theme choice is saved in browser localStorage
 
 ## Flags
 
@@ -94,7 +107,7 @@ A footnote reference.[^1]
 
 ## Home Manager
 
-Use flake module to run `ghmd` as user service:
+Use the flake module to run `ghmd` as a user systemd service:
 
 ```nix
 {
@@ -123,7 +136,7 @@ Use flake module to run `ghmd` as user service:
 Format the project:
 
 ```bash
-gofmt -w main.go
+gofmt -w *.go
 ```
 
 ## License
